@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>listar</title>
+</head>
+<body>
+
+
+<nav>
+  <h1> Lista de Zapatos</h1>
+
+
+
+    <label for="endpoint"> Endpoint:<br>
+  <input type="text" id="endpoint" value="http://localhost:3000/zapatos">
+  </label>
+
+
+  <button id="btnMostrar">Mostrar lista</button>
+  <p id="msg"></p>
+  <div id="resultado"></div>
+
+</nav>
+
+  <script>
+    const btnMostrar = document.getElementById('btnMostrar');
+    const msg = document.getElementById('msg');
+    const resultado = document.getElementById('resultado');
+    const endpoint = document.getElementById('endpoint');
+
+    btnMostrar.addEventListener('click', async () => {
+      msg.textContent = ' Cargando lista...';
+      resultado.innerHTML = '';
+      btnMostrar.disabled = true;
+
+      try {
+        const resp = await fetch(endpoint.value);
+        if (!resp.ok) throw new Error("Error en la petición");
+
+        const json = await resp.json();
+
+        // Si el backend devuelve data o zapatoNuevo
+        const Lista = json.data || json.zapatoNuevo || [];
+
+        if (Lista.length === 0) {
+          msg.textContent = " No hay zapatos para mostrar.";
+        } else {
+          msg.textContent = ` ${Lista.length} zapatos cargados:`;
+          Lista.forEach(z => {
+            const div = document.createElement("div");
+            console.log(div);
+            div.className = "zapato";
+            div.innerHTML = `
+              <strong>${z.brand}</strong> - ${z.model}<br>
+              Color: ${z.color}<br>
+              Talla: ${z.size}<br>
+              Precio: $${z.price}<br>
+              Stock: ${z.stock ?? 0}<br>
+              Etiquetas: ${z.tags?.join(', ') || 'Ninguna'}
+              <a href="./actualizar.html?id=${z._id}" >Actualizar</a>
+              <a href="#" class="btnEliminar" data-id="${z._id}">Eliminar</a>
+            `
+            ;
+            resultado.appendChild(div);
+ 
+ 
+          const btnEliminar= div.querySelector(".btnEliminar");
+          console.log(btnEliminar);
+          btnEliminar.addEventListener("click", async (e)=>{
+
+      const id =btnEliminar.getAttribute('data-id');
+      console.log(id);
+      try{
+        const eliminar =await fetch(`http://localhost:3000/zapatos/${id}`,{
+          method: 'DELETE'
+        })
+         if (!eliminar.ok) {
+         throw new Error("Error al eliminar zapato");
+       }else{
+        console.log("Zapato eliminado");
+         div.remove(); 
+      }
+
+      }catch (error){
+        console.log(error);
+      }
+   })
+
+  });
+      
+      }
+
+      } catch (error) {
+        msg.textContent = " Error al cargar la lista. Verifica el backend o CORS.";
+        console.error("Error:", error);
+      } finally {
+        btnMostrar.disabled = false;
+      }
+
+});
+     
+  
+  
+</script>
+ 

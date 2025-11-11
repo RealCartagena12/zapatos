@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>App Zapatos</title>
+</head>
+
+<body>
+  <main>
+    <h1>Crear zapato</h1>
+    <!-- aquí va el formulario -->
+
+    <form class="row row-cols-lg-auto g-3 align-items-center" id="formZapato">
+      <label>Endpoint<br>
+        <input id="endpoint" type="text" value="http://localhost:3000/zapatos">
+      </label><br><br>
+      <label>Marca (brand)<br>
+        <input name="brand" type="text" required>
+      </label><br>
+      <label>Modelo (model)<br>
+        <input name="model" type="text" required>
+      </label><br>
+      <label>Talla (size, número)<br>
+        <input name="size" type="number" required>
+      </label><br>
+      <label>Color<br>
+        <input name="color" type="text" required>
+      </label><br>
+      <label>Precio (price)<br>
+        <input name="price" type="number" required>
+      </label><br>
+      <label>Stock (opcional)<br>
+        <input name="stock" type="number" placeholder="0">
+      </label><br>
+      <label>Tags (opcional, separa por comas)<br>
+        <input name="tags" type="text" placeholder="running,hombre">
+      </label><br><br>
+      <button class="btn btn-primary" id="btnEnviar" type="submit">Crear zapato</button>
+    </form>
+
+    <p id="msg"></p>
+    <pre id="out"></pre>
+  </main>
+  <!--shift+alt+f-->
+  <script src="index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>  
+</body>
+</html>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");//sacando los parametros get
+
+    var form = document.getElementById('formZapato');
+    var out  = document.getElementById('out');
+    var msg  = document.getElementById('msg');
+    var btn  = document.getElementById('btnEnviar');
+    var endpoint = document.getElementById('endpoint');
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      msg.textContent = '';
+      out.textContent = '';
+      btn.disabled = true; btn.textContent = 'Enviando...';
+
+      // 1) Leer valores
+      var marca = form.brand.value.trim();
+      var model = form.model.value.trim();
+      var size  = Number(form.size.value);
+      var color = form.color.value.trim();
+      var price = Number(form.price.value); 
+      var stock = Number(form.stock.value);
+      var tagsStr = form.tags.value.trim(); // string con las etiquetas separadas por comas
+      var tags = tagsStr ? tagsStr.split(',').map(function(t){ return t.trim(); }).filter(function(x){return x;}) : [];
+      //split: separa el string en un array usando la coma como separador
+      //map: recorre el array y le aplica trim a cada elemento
+      //filter: elimina los elementos vacíos del array
+
+
+      // 2) Validaciones simples en el cliente
+      if(!marca || !model || !color || isNaN(size) || isNaN(price)){
+        msg.textContent = '⚠️ Completa los campos obligatorios y usa números válidos.';
+        btn.disabled = false; btn.textContent = 'Crear zapato';
+        return;
+      }
+
+      var zapatoNuevo = {
+        brand: marca,
+        model: model,
+        size: size,
+        color: color,
+        price: price,
+        stock: isNaN(stock) ? 0 : stock,
+        tags: tags
+      };
+
+      // 3) Enviar a la API (POST)
+                           fetch(endpoint.value, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                               body: JSON.stringify(zapatoNuevo)
+                                      })
+                                      .then(function(r){
+                                        if(!r.ok){
+                                          throw new Error('Error en la respuesta de la API');
+                                        }
+                                        return r.json();
+                                      })
+                                      .then(function(json){
+                                        msg.textContent = ' Zapato creado correctamente.';
+                                        out.textContent = JSON.stringify(json, null, 2);
+                                        form.reset(); // Limpia el formulario
+                                      })
+                                      .catch(function(err){
+                                        console.error(err);
+                                        msg.textContent = ' Error al conectar con la API o CORS.';
+                                      })
+                                      .finally(function(){
+                                        btn.disabled = false;
+                                        btn.textContent = 'Crear zapato';
+                                      });
+                                    });
+                                  });
+</script>
