@@ -1,0 +1,21 @@
+# 🔒 Archivos de entorno
+.env
+.env.local
+.env.production
+.env.development
+
+# 📦 Dependencias de Node
+node_modules/
+
+# ⚙️ Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 🧱 Build / dist
+dist/
+build/
+
+# 💻 Archivos del sistema
+.DS_Store
+Thumbs.db
