@@ -1,18 +1,21 @@
 const express = require('express'); // Importa el paquete express para crear el servidor y manejar rutas
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const Zapato = require('./models/Zapato');
 const cors = require('cors'); // Importa el paquete cors para manejar políticas de CORS
+const zapatoRoutes = require('./routes/zapato.routes');
 
-const app = express(); // Crea la instancia de la aplicación Express
-
-app.use(cors()); // Habilita CORS para todas las rutas
 
 dotenv.config();
 
+const app = express(); // Crea la instancia de la aplicación Express
+app.use(cors()); // Habilita CORS para todas las rutas
+app.use(express.json()); // Middleware: permite que Express parsee cuerpos JSON en las peticiones
+
+app.use('/', zapatoRoutes); // Usa las rutas definidas en zapato.routes.js bajo el prefijo /api
+
 const PORT = process.env.PORT || 3000; // Define el puerto: usa la variable de entorno PORT o 3000 por defecto
 
-app.use(express.json()); // Middleware: permite que Express parsee cuerpos JSON en las peticiones
+
 
 async function start(){
   try{
@@ -26,8 +29,6 @@ async function start(){
 }
 
 start();
-
-
 
 
 // Servidor escuchando

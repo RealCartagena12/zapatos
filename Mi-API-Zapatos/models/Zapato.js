@@ -1,4 +1,4 @@
-const { text } = require('express');
+
 const mongoose = require('mongoose');
 
 const zapatoSchema = new mongoose.Schema({

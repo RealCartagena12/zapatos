@@ -1,26 +1,28 @@
-import { createZapato } from "../services/zapato.service";
+const Zapato = require('../models/Zapato.js');
 
 
-//mensaje de salud
-app.get('/no', (req,res) => {
-  res.json({ ok:true, message:'API Zapatos OK' });
-});
+// Endpoint de health 
+const healthCheck = (req, res) => {
+  try {
+  res.json({ ok: true, message: 'API de Zapatos funcionando correctamente' });
+}catch (error) {
+  res.status(500).json({ ok: false, error: error.message });
+}
+};
 
-
-// Endpoint para crear un zapato
-app.post('/zapatos', async (req, res) => { 
-   const zapato= createZapato(req.body);
-    if (zapato!==null) { 
-    return res.status(201).json({ ok: true, data: zapato });
-  } else {
-    error= new Error('Error creando el zapato');
-    return res.status(400).json({ ok: false, error: error.message });
+//Crear Zapato
+const createZapato = async (req, res) => {
+  try {
+    const zapato = await Zapato.create(req.body);
+    res.status(201).json({ ok: true, data: zapato });
+  }catch (error) {
+    res.status(400).json({ ok: false, error: error.message });
   }
-});
+};  
 
 
-//obtener todos los zapatos
-app.get('/zapatos', async (req, res) => {
+// obtener todos los zapatos 
+const getZapatos = async (req, res) => {
   try {
     const { brand, model, color, size, minPrice, maxPrice } = req.query;
     const q = {};
@@ -38,36 +40,38 @@ app.get('/zapatos', async (req, res) => {
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
-});
-
+};
 
 
 // Endpoint para obtener un zapato por su ID
-app.get('/zapatos/:id', async (req, res) => {
-  try {
-    const item = await Zapato.findById(req.params.id);
+const getZapatoById = async (req, res) => {
+  try{
+     const item = await Zapato.findById(req.params.id);
     if (!item) return res.status(404).json({ ok:false, error:'No encontrado' });
     return res.json({ ok:true, data:item });
   } catch (error) {
     return res.status(400).json({ ok:false, error:error.message });
   }
-});
+};
+
+
+
 
 // Endpoint para actualizar un zapato
-app.put('/zapatos/:id', async (req, res) => {
+const updateZapato = async (req, res) => {
   try {
-    const update = req.body;
-    const item = await Zapato.findByIdAndUpdate(req.params.id, update, { new:true, runValidators:true });
+    const item = await Zapato.findByIdAndUpdate(req.params.id, req.body , 
+      { new:true, runValidators:true });
     if (!item) return res.status(404).json({ ok:false, error:'No encontrado' });
-    return res.json({ ok:true, data:item });
-  } catch (error) {
-    return res.status(400).json({ ok:false, error:error.message });
+    res.json({ ok:true, data:item });
+  }catch (error) {
+    res.status(400).json({ ok:false, error:error.message });
   }
-});
+};
 
 
 // 🗑️ DELETE /zapatos/:id → Elimina un zapato por su id
-app.delete('/zapatos/:id', async (req, res) => {
+const deleteZapato = async (req, res) => {
   try {
     const item = await Zapato.findByIdAndDelete(req.params.id);
     if (!item) return res.status(404).json({ ok:false, error:'No encontrado' });
@@ -75,4 +79,13 @@ app.delete('/zapatos/:id', async (req, res) => {
   } catch (error) {
     return res.status(400).json({ ok:false, error:error.message });
   }
-});
+};
+
+module.exports = {
+  healthCheck,
+  createZapato,
+  getZapatos,
+  getZapatoById,
+  updateZapato,
+  deleteZapato
+};
